@@ -17,10 +17,6 @@ const hotelSchema = new Schema(
         images: {
             type: [String],
             required: true
-        },
-        trip: {
-            type: Schema.Types.ObjectId,
-            ref: 'Trips'
         }
     },
     {

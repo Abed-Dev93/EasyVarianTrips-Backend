@@ -24,7 +24,7 @@ const agencySchema = new Schema(
         },
         trips: {
             type: [Schema.Types.ObjectId],
-            ref: 'trips'
+            ref: 'Trips'
         }
     },
     {
@@ -32,6 +32,6 @@ const agencySchema = new Schema(
     }
 )
 
-const agencies = model('agenices', agencySchema)
+const agencies = model('agencies', agencySchema)
 
 export default agencies

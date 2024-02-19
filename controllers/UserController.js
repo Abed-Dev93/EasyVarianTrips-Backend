@@ -55,8 +55,8 @@ const userController = {
       getUserByEmail: async (req, res) => {
         const email = req.body.email
         try {
-          const users = await User.find({ email: email })
-          users ? res.status(200).json({ Users: users }) : res.status(404).json({ Message: "Error occured" })
+          const user = await User.findOne({ email: email })
+          user ? res.status(200).json({ User: user }) : res.status(404).json({ Message: "Error occured" })
         } catch (error) {
           return  res.status(500).json({ Error: error.message })
         }
@@ -76,7 +76,7 @@ const userController = {
             const trip = await Trip.findById({ _id: tripId })
             if (!trip)
                 res.status(200).send(`Trip ${tripId} is not valid!`)
-            const users = await User.find({ trip: trip._id })
+            const users = await User.find({ _id: { $in: trip.users } })
             users ? res.status(200).json({ Users: users }) :
                 res.status(404).send('Error occured!')
         }

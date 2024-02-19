@@ -27,7 +27,7 @@ const tripSchema = new Schema(
             required: true
         },
         price: {
-            type: price,
+            type: Number,
             required: true
         },
         images: {
@@ -42,29 +42,25 @@ const tripSchema = new Schema(
             type: Number,
             required: true
         },
+        country: {
+            type: String,
+            required: true
+        },
         purchaseDate: {
             type: Date,
             required: true
         },
-        users: {
-            type: [Schema.Types.ObjectId],
-            ref: 'Users'
-        },
-        agency: {
-            type: Schema.Types.ObjectId,
-            ref: 'Transportations'
-        },
         transportation: {
             type: Schema.Types.ObjectId,
-            ref: 'Transportations'
+            ref: "Transportations"
         },
         hotel: {
             type: Schema.Types.ObjectId,
             ref: 'Hotels'
         },
-        region: {
-            type: Schema.Types.ObjectId,
-            ref: 'Regions'
+        users: {
+            type: [Schema.Types.ObjectId],
+            ref: 'Users'
         }
     },
     {

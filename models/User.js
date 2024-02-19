@@ -20,7 +20,6 @@ const userSchema = new Schema(
         },
         avatar: {
             type: String,
-            required: true
         },
         role: {
             type: String,
@@ -30,15 +29,9 @@ const userSchema = new Schema(
         priority: {
             type: String,
             enum: ['land', 'sea', 'air'],
-            required: true
         },
         interests: {
-            type: [String],
-            enum: [],
-        },
-        trip: {
-            type: Schema.Types.ObjectId,
-            ref: 'Trips'
+            type: [String]
         }
     },
     {

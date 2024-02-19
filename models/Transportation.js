@@ -6,11 +6,11 @@ const transportationSchema = new Schema(
             type: String,
             required: true
         },
-        departureLocation: {
+        fromLocation: {
             type: String,
             required: true
         },
-        arrivalLocation: {
+        toLocation: {
             type: String,
             required: true
         },
@@ -23,7 +23,7 @@ const transportationSchema = new Schema(
             required: true
         },
         duration: {
-            type: Number,
+            type: Object,
             required: true
         },
         transit: {
@@ -31,8 +31,8 @@ const transportationSchema = new Schema(
             Enum: ['stop', 'non-stop'],
             required: true
         },
-        trip: {
-            type: Schema.Types.ObjectId,
+        trips: {
+            type: [Schema.Types.ObjectId],
             ref: 'Trips'
         }
     },

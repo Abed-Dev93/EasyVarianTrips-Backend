@@ -51,12 +51,12 @@ const tripSchema = new Schema(
             required: true
         },
         transportation: {
-            type: Schema.Types.ObjectId,
-            ref: "Transportations"
+            type: String,
+            required: true
         },
         hotel: {
-            type: Schema.Types.ObjectId,
-            ref: 'Hotels'
+            type: String,
+            required: true
         },
         users: {
             type: [Schema.Types.ObjectId],

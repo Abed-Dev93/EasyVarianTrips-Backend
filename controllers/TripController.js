@@ -3,6 +3,7 @@ import User from '../models/User.js'
 import Agency from '../models/Agency.js'
 import Transportation from '../models/Transportation.js'
 import Hotel from '../models/Hotel.js'
+import trips from '../models/Trip.js'
 
 const tripController = {
     createTrip: async (req, res) => {
@@ -18,8 +19,8 @@ const tripController = {
                     timeDifference = endDateTime.getTime() - startDateTime.getTime(),
                     daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
                 const agency = await Agency.findById({ _id: id })
-                const transportation = await Transportation.findById({ _id: })
-                const hotel = await Hotel.findById({ _id: })
+                const transportationFound = await Transportation.findById({ _id: transportation._id })
+                const hotelFound = await Hotel.findById({ _id: hotel._id })
                 const newTrip = await Trip.create({
                     title,
                     category,
@@ -33,11 +34,13 @@ const tripController = {
                     reservedPlaces: 0,
                     country,
                     purchaseDate: new Date(),
-                    transportation,
-                    hotel
+                    transportation: transportationFound.title,
+                    hotel: hotelFound.title
                 })
                 await newTrip.save()
                 agency.trips.push(newTrip._id)
+                transportation.trips.push(newTrip._id)
+                hotel.trips.push(newTrip._id)
                 newTrip ? res.status(200).json({ Trip: newTrip }) :
                     res.status(400).send('Error occured!')
             }
@@ -132,12 +135,15 @@ const tripController = {
         try {
             if (startDate){
                 const trips = await Trip.find({ startDate: startDate })
+                trips ? res.status(200).json({ Trips: trips }) : res.status(400).json({ Message: "Trips not found" })
             }
             else if (endDate) {
                 const trips = await Trip.find({ endDate: endDate })
+                trips ? res.status(200).json({ Trips: trips }) : res.status(400).json({ Message: "Trips not found" })
             }
             else if (startDate && endDate) {
                 const trips = await Trip.find({ startDate: startDate, endDate: endDate })
+                trips ? res.status(200).json({ Trips: trips }) : res.status(400).json({ Message: "Trips not found" })
             }
         }
         catch (error) {
@@ -154,4 +160,57 @@ const tripController = {
             return  res.status(500).json({ message: error.message })
         }
     },
+    updateTripById: async (req, res) => {
+        const id = req.params.id
+        const { title, interests, category, price, capacity, startDate, endDate, country, transportation, hotel } = req.body
+        const files = req.files
+        const images = files.map(item => item.path)
+        try {
+            if (startDate && endDate && new Date(startDate).getTime() < new Date(endDate).getTime()) {
+                const startDateTime = new Date(startDate), endDateTime = new Date(endDate),
+                    timeDifference = endDateTime.getTime() - startDateTime.getTime(),
+                    daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
+                const agency = await Agency.findById({ _id: id })
+                const transportationFound = await Transportation.findById({ _id: transportation._id })
+                const hotelFound = await Hotel.findById({ _id: hotel._id })
+                const editTrip = await Trip.findByIdAndUpdate({ _id: id }, {
+                    title,
+                    category,
+                    interests,
+                    startDate,
+                    endDate,
+                    duration: daysDifference,
+                    price,
+                    images,
+                    capacity,
+                    reservedPlaces,
+                    country,
+                    transportation: transportationFound.title,
+                    hotel: hotelFound.title
+                })
+                await editTrip.save()
+                agency.trips.push(editTrip._id)
+                transportation.trips.push(editTrip._id)
+                hotel.trips.push(editTrip._id)
+                editTrip ? res.status(200).send(`Trip ${id} has been updated successfully!`) :
+                    res.status(400).send('Error occured!')
+            }
+            else
+                return res.status(400).json({ Error: 'Invalid startDate or endDate provided!' })
+            }
+        catch (error) {
+            return  res.status(500).json({ message: error.message })
+        }
+    },
+    deleteTripById: async (req, res) => {
+        const id = req.params.id
+        try {
+            const removeTrip = await Trip.findByIdAndDelete({ _id: id })
+            removeTrip ? res.status(200).send(`Trip ${id} has been deleted successfully!`) :
+                res.status(400).send('Error occured!')
+        }
+        catch (error) {
+            return  res.status(500).json({ message: error.message })
+        }
+    }
 }

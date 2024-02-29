@@ -1,26 +1,20 @@
 import Trip from '../models/Trip.js'
 import User from '../models/User.js'
-import Agency from '../models/Agency.js'
-import Transportation from '../models/Transportation.js'
-import Hotel from '../models/Hotel.js'
-import trips from '../models/Trip.js'
 
 const tripController = {
     createTrip: async (req, res) => {
         const id = req.params.id
-        const { title, interests, category, price, capacity, startDate, endDate, country, transportation, hotel } = req.body
+        const { title, category, interests, price, capacity, startDate, endDate, country, hotel } = req.body
         const files = req.files
         const images = files.map(item => item.path)
-        if (!title || !interests || !category || !price || !capacity || !startDate || !endDate || !country || !transportation || !hotel)
+        if (!title || !interests || !category || !price || !capacity || !startDate || !endDate || !country || !hotel)
         return res.status(400).send('All fields are required!')
         try {
             if (startDate && endDate && new Date(startDate).getTime() < new Date(endDate).getTime()) {
                 const startDateTime = new Date(startDate), endDateTime = new Date(endDate),
                     timeDifference = endDateTime.getTime() - startDateTime.getTime(),
                     daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
-                const agency = await Agency.findById({ _id: id })
-                const transportationFound = await Transportation.findById({ _id: transportation._id })
-                const hotelFound = await Hotel.findById({ _id: hotel._id })
+                const user = await User.findById({ _id: id })
                 const newTrip = await Trip.create({
                     title,
                     category,
@@ -33,14 +27,10 @@ const tripController = {
                     capacity,
                     reservedPlaces: 0,
                     country,
-                    purchaseDate: new Date(),
-                    transportation: transportationFound.title,
-                    hotel: hotelFound.title
+                    hotel
                 })
                 await newTrip.save()
-                agency.trips.push(newTrip._id)
-                transportation.trips.push(newTrip._id)
-                hotel.trips.push(newTrip._id)
+                user.trips.push(newTrip._id)
                 newTrip ? res.status(200).json({ Trip: newTrip }) :
                     res.status(400).send('Error occured!')
             }
@@ -120,16 +110,6 @@ const tripController = {
             return  res.status(500).json({ message: error.message })
         }
     },
-    getTripByPurchaseDate: async (req, res) => {
-        const purchaseDate = req.body.purchaseDate
-        try {
-            const trips = await Trip.find({ purchaseDate: purchaseDate })
-            trips ? res.status(200).json({ Trips: trips }) : res.status(404).json({ Message: "Trips not found" })
-        }
-        catch (error) {
-            return  res.status(500).json({ message: error.message })
-        }
-    },
     getTripByDate: async (req, res) => {
         const { startDate, endDate } = req.body
         try {
@@ -162,7 +142,7 @@ const tripController = {
     },
     updateTripById: async (req, res) => {
         const id = req.params.id
-        const { title, interests, category, price, capacity, startDate, endDate, country, transportation, hotel } = req.body
+        const { title, interests, category, price, capacity, startDate, endDate, country, hotel } = req.body
         const files = req.files
         const images = files.map(item => item.path)
         try {
@@ -170,9 +150,6 @@ const tripController = {
                 const startDateTime = new Date(startDate), endDateTime = new Date(endDate),
                     timeDifference = endDateTime.getTime() - startDateTime.getTime(),
                     daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
-                const agency = await Agency.findById({ _id: id })
-                const transportationFound = await Transportation.findById({ _id: transportation._id })
-                const hotelFound = await Hotel.findById({ _id: hotel._id })
                 const editTrip = await Trip.findByIdAndUpdate({ _id: id }, {
                     title,
                     category,
@@ -185,13 +162,9 @@ const tripController = {
                     capacity,
                     reservedPlaces,
                     country,
-                    transportation: transportationFound.title,
-                    hotel: hotelFound.title
+                    hotel
                 })
                 await editTrip.save()
-                agency.trips.push(editTrip._id)
-                transportation.trips.push(editTrip._id)
-                hotel.trips.push(editTrip._id)
                 editTrip ? res.status(200).send(`Trip ${id} has been updated successfully!`) :
                     res.status(400).send('Error occured!')
             }
@@ -214,3 +187,5 @@ const tripController = {
         }
     }
 }
+
+export default tripController

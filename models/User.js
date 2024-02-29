@@ -23,15 +23,12 @@ const userSchema = new Schema(
         },
         role: {
             type: String,
-            enum: ['admin', 'user', 'guest'],
+            enum: ['admin', 'user', 'agency'],
             required: true
         },
-        priority: {
-            type: String,
-            enum: ['land', 'sea', 'air'],
-        },
-        interests: {
-            type: [String]
+        trips: {
+            type: [Schema.Types.ObjectId],
+            ref: 'Trips'
         }
     },
     {

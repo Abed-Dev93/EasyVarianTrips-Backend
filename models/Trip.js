@@ -8,6 +8,7 @@ const tripSchema = new Schema(
         },
         category: {
             type: String,
+            enum: ['land', 'sea', 'flight'],
             required: true
         },
         interests: {
@@ -23,8 +24,7 @@ const tripSchema = new Schema(
             required: true
         },
         duration: {
-            type: Number,
-            required: true
+            type: Number
         },
         price: {
             type: Number,
@@ -39,18 +39,9 @@ const tripSchema = new Schema(
             required: true
         },
         reservedPlaces: {
-            type: Number,
-            required: true
+            type: Number
         },
         country: {
-            type: String,
-            required: true
-        },
-        purchaseDate: {
-            type: Date,
-            required: true
-        },
-        transportation: {
             type: String,
             required: true
         },

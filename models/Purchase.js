@@ -10,8 +10,17 @@ const purchaseSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: 'Users'
         },
-        date: {
-            type: Date
+        name: {
+            type: String,
+            required: true
+        },
+        email: {
+            type: String,
+            required: true
+        },
+        phone: {
+            type: String,
+            required: true
         },
         persons: {
             type: Number,

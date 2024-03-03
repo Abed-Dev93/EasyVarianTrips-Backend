@@ -77,6 +77,14 @@ const userController = {
           return  res.status(500).json({ Error: error.message })
         }
       },
+      getUserByHasPurchased: async (req, res) => {
+        try {
+          const users = await User.find({ hasPurchased: true })
+          users ? res.status(200).json({ Users: users }) : res.status(404).json({ Message: "Error occured" })
+        } catch (error) {
+          return  res.status(500).json({ Error: error.message })
+        }
+      },
       getUserByTrip: async (req, res) => {
         const tripId = req.body.tripId
         try {

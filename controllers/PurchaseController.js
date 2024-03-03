@@ -5,8 +5,8 @@ import Trip from '../models/Trip.js'
 const purchaseController = {
     createPurchase: async (req, res) => {
         const id = req.params.id
-        const { tripId, persons } = req.body
-        if (!persons)
+        const { tripId, name, email, phone, persons } = req.body
+        if (!name || !email || !phone ||!persons)
             return res.status(400).send('All fields are required!')
         try {
             const user = await User.findById({ _id: id })
@@ -14,12 +14,16 @@ const purchaseController = {
             const newPurchase = await Purchase.create({
                 trip: tripId,
                 user: id,
-                date: new Date(),
+                name,
+                email,
+                phone,
                 persons,
                 price: persons * trip.price
             })
             await newPurchase.save()
             trip.users.push(user._id)
+            trip.capacity -= newPurchase.persons
+            await trip.save()
             newPurchase ? res.status(200).json({ Purchase: newPurchase }) :
                 res.status(400).send('Error occured!')
         }
@@ -82,11 +86,15 @@ const purchaseController = {
     },
     updatePurchaseById: async (req, res) => {
         const id = req.params.id
-        const { persons, tripId }= req.body.persons
+        const { tripId, name, email, phone, persons } = req.body
         try {
+            const purchase = await Purchase.findById({ _id: id })
             const trip = await Trip.findById({ _id: tripId })
-            const editPurchase = await Purchase.findByIdAndUpdate({ _id: id }, { persons, price: trip.price * persons })
+            const editPurchase = await Purchase.findByIdAndUpdate({ _id: id }, { name, email, phone, persons, price: trip.price * persons })
             await editPurchase.save()
+            trip.capacity += purchase.persons
+            trip.capacity -= editPurchase.persons
+            await trip.save()
             editPurchase ? res.status(200).send(`Purchase ${id} has been updated successfully!`) : 
                 res.status(400).send('Error occured!')
         }
@@ -97,8 +105,12 @@ const purchaseController = {
     deletePurchaseById: async (req, res) => {
         const id = req.params.id
         try {
+            const purchase = await Purchase.findById({ _id: id })
+            const trip = await Trip.findById({ _id: purchase.trip })
             const removePurchase = await Purchase.findByIdAndDelete({ _id: id })
             await removePurchase.save()
+            trip.capacity += purchase.persons
+            await trip.save()
             removePurchase ? res.status(200).send(`Purchase ${id} has been deleted successfully!`) : 
                 res.status(400).send('Error occured!')
         }

@@ -26,6 +26,10 @@ const userSchema = new Schema(
             enum: ['admin', 'user', 'agency'],
             required: true
         },
+        hasPurchased: {
+            type: Boolean,
+            default: false
+        },
         trips: {
             type: [Schema.Types.ObjectId],
             ref: 'Trips'

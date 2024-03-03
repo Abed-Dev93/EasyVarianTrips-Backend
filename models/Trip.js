@@ -2,17 +2,22 @@ import { Schema, model } from "mongoose"
 
 const tripSchema = new Schema(
     {
-        title: {
-            type: String,
-            required: true
-        },
         category: {
             type: String,
             enum: ['land', 'sea', 'flight'],
             required: true
         },
-        interests: {
-            type: [String],
+        type: {
+            type: String,
+            enum: ['mountain', 'desert', 'coast', 'glacier', 'city tour', 'nature'],
+            required: true
+        },
+        shortDescription: {
+            type: String,
+            required: true
+        },
+        description: {
+            type: String,
             required: true
         },
         startDate: {
@@ -21,6 +26,14 @@ const tripSchema = new Schema(
         },
         endDate: {
             type: Date,
+            required: true
+        },
+        fromLocation: {
+            type: String,
+            required: true
+        },
+        toLocation: {
+            type: [String],
             required: true
         },
         duration: {
@@ -38,15 +51,17 @@ const tripSchema = new Schema(
             type: Number,
             required: true
         },
-        reservedPlaces: {
-            type: Number
-        },
         country: {
             type: String,
             required: true
         },
         hotel: {
             type: String,
+            required: true
+        },
+        transit: {
+            type: String,
+            enum: ['stop', 'non-stop'],
             required: true
         },
         users: {

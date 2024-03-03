@@ -1,4 +1,4 @@
-const paginate = (req, res, next) => {
+const Paginate = (req, res, next) => {
     const { pageNumber, pageSize } = req.query
     if (pageNumber && pageSize) {
         const offset = pageSize * (pageNumber - 1)
@@ -13,3 +13,5 @@ const paginate = (req, res, next) => {
         next()
     }
 }
+
+export default Paginate

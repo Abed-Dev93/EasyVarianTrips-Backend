@@ -1,36 +1,41 @@
 import Trip from '../models/Trip.js'
 import User from '../models/User.js'
+import fs from 'fs/promises'
 
 const tripController = {
     createTrip: async (req, res) => {
-        const id = req.params.id
-        const { title, category, interests, price, capacity, startDate, endDate, country, hotel } = req.body
+        const userId = req.user._id
+        const { category, type, shortDescription, description, price, capacity, startDate, endDate, fromLocation, toLocation, country, hotel, transit } = req.body
         const files = req.files
         const images = files.map(item => item.path)
-        if (!title || !interests || !category || !price || !capacity || !startDate || !endDate || !country || !hotel)
-        return res.status(400).send('All fields are required!')
+        if (!category || !type || !shortDescription || !description || !price || !images || !capacity || !startDate || !endDate || !fromLocation || !toLocation || !country || !hotel || !transit)
+            return res.status(400).send('All fields are required!')
         try {
             if (startDate && endDate && new Date(startDate).getTime() < new Date(endDate).getTime()) {
                 const startDateTime = new Date(startDate), endDateTime = new Date(endDate),
                     timeDifference = endDateTime.getTime() - startDateTime.getTime(),
                     daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
-                const user = await User.findById({ _id: id })
+                const user = await User.findById({ _id: userId })
                 const newTrip = await Trip.create({
-                    title,
                     category,
-                    interests,
+                    type,
+                    shortDescription,
+                    description,
                     startDate,
                     endDate,
+                    fromLocation,
+                    toLocation,
                     duration: daysDifference,
                     price,
                     images,
                     capacity,
-                    reservedPlaces: 0,
                     country,
-                    hotel
+                    hotel,
+                    transit
                 })
                 await newTrip.save()
                 user.trips.push(newTrip._id)
+                await user.save()
                 newTrip ? res.status(200).json({ Trip: newTrip }) :
                     res.status(400).send('Error occured!')
             }
@@ -42,8 +47,9 @@ const tripController = {
         }
     },
     getAllTrips: async (req, res) => {
+        const { offset, limit } = req
         try {
-            const allTrips = await Trip.find()
+            const allTrips = await Trip.find().skip(offset).limit(limit)
             return res.status(200).json({ Trips: allTrips })
         }
         catch (error) {
@@ -64,6 +70,16 @@ const tripController = {
         const category = req.body.category
         try {
             const trips = await Trip.find({ category: category })
+            trips ? res.status(200).json({ Trips: trips }) : res.status(404).json({ Message: "Trips not found" })
+        }
+        catch (error) {
+            return  res.status(500).json({ message: error.message })
+        }
+    },
+    getTripByType: async (req, res) => {
+        const type = req.body.type
+        try {
+            const trips = await Trip.find({ type: type })
             trips ? res.status(200).json({ Trips: trips }) : res.status(404).json({ Message: "Trips not found" })
         }
         catch (error) {
@@ -110,6 +126,36 @@ const tripController = {
             return  res.status(500).json({ message: error.message })
         }
     },
+    getTripByPriceAsc: async (req, res) => {
+        const { offset, limit } = req
+        try {
+            const trips = await Trip.find().sort({ price: 1 }).skip(offset).limit(limit)
+            trips ? res.status(200).json({ Trips: trips }) : res.status(404).json({ Message: "Trips not found" })
+        }
+        catch (error) {
+            return  res.status(500).json({ message: error.message })
+        }
+    },
+    getTripByPriceDesc: async (req, res) => {
+        const { offset, limit } = req
+        try {
+            const trips = await Trip.find().sort({ price: -1 }).skip(offset).limit(limit)
+            trips ? res.status(200).json({ Trips: trips }) : res.status(404).json({ Message: "Trips not found" })
+        }
+        catch (error) {
+            return  res.status(500).json({ message: error.message })
+        }
+    },
+    getTripByTransit: async (req, res) => {
+        const { offset, limit } = req
+        try {
+            const trips = await Trip.find({ transit: 'non-stop' }).skip(offset).limit(limit)
+            trips ? res.status(200).json({ Trips: trips }) : res.status(404).json({ Message: "Trips not found" })
+        }
+        catch (error) {
+            return  res.status(500).json({ message: error.message })
+        }
+    },
     getTripByDate: async (req, res) => {
         const { startDate, endDate } = req.body
         try {
@@ -130,11 +176,13 @@ const tripController = {
             return  res.status(500).json({ message: error.message })
         }
     },
-    getTripByInterests: async (req, res) => {
-        const interests = req.body.interests
+    getTripFormGuest: async (req, res) => {
+        const { fromLocation, toLocation, startDate, maxPrice } = req.body
+        if (!fromLocation || !toLocation || !startDate)
+                return res.status(400).send('All fields are required!')
         try {
-            const trips = await Trip.find({ interests: JSON.stringify(interests) })
-            trips ? res.status(200).json({ Trips: trips }) : res.status(404).json({ Message: "Trips not found" })
+            const trips = await Trip.find({ fromLocation, toLocation, startDate, price: { $lte: maxPrice }})
+                trips ? res.status(200).json({ Trips: trips }) : res.status(404).json({ Message: "Trips not found" })
         }
         catch (error) {
             return  res.status(500).json({ message: error.message })
@@ -142,27 +190,32 @@ const tripController = {
     },
     updateTripById: async (req, res) => {
         const id = req.params.id
-        const { title, interests, category, price, capacity, startDate, endDate, country, hotel } = req.body
+        const { category, type, shortDescription, description, price, capacity, startDate, endDate, fromLocation, toLocation, country, hotel, transit } = req.body
         const files = req.files
         const images = files.map(item => item.path)
+        const trip = await Trip.findById({ _id: id })
+        let oldImages = trip.images
         try {
             if (startDate && endDate && new Date(startDate).getTime() < new Date(endDate).getTime()) {
                 const startDateTime = new Date(startDate), endDateTime = new Date(endDate),
                     timeDifference = endDateTime.getTime() - startDateTime.getTime(),
                     daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
                 const editTrip = await Trip.findByIdAndUpdate({ _id: id }, {
-                    title,
                     category,
-                    interests,
+                    type,
+                    shortDescription,
+                    description,
                     startDate,
                     endDate,
+                    fromLocation,
+                    toLocation,
                     duration: daysDifference,
                     price,
                     images,
                     capacity,
-                    reservedPlaces,
                     country,
-                    hotel
+                    hotel,
+                    transit
                 })
                 await editTrip.save()
                 editTrip ? res.status(200).send(`Trip ${id} has been updated successfully!`) :

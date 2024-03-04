@@ -11,7 +11,7 @@ const app = express()
 const port = process.env.PORT
 
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: 'https://easyvariantrips-backend-2.onrender.com',
     credentials: true,
     optionsSuccessStatus: 200
 }))

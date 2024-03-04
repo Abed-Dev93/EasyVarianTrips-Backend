@@ -4,7 +4,7 @@ import { verifyToken, checkRole } from '../middlewares/Authentication.js'
 
 const purchaseRouter = express.Router()
 
-purchaseRouter.post('/create', verifyToken, checkRole(['user']), purchaseController.createPurchase)
+purchaseRouter.post('/create/:id', verifyToken, checkRole(['user']), purchaseController.createPurchase)
 purchaseRouter.get('/allPurchases', verifyToken, checkRole(['admin', 'agency']), purchaseController.getAllPurchases)
 purchaseRouter.get('/:id', verifyToken, purchaseController.getPurchaseById)
 purchaseRouter.get('/date', verifyToken, checkRole(['admin', 'agency']), purchaseController.getPurchaseByDate)

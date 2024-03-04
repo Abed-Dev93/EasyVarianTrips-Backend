@@ -7,8 +7,8 @@ import Trip from '../models/Trip.js'
 const userController = {
     register: async (req, res) => {
         const { name, email, password, location, role } = req.body
-        const image = req.file?.path
-        if (!name || !email || !password || !location || !role)
+        const image = req.file.path
+        if (!name || !email || !password || !location || !image || !role)
             return res.status(400).send('All fields are required!')
         try {
             const existingUser = await User.findOne({ email: email })
@@ -103,13 +103,16 @@ const userController = {
         const { name, email, oldPassword, password, location, role } = req.body
         const image = req.file?.path
         const id = req.params.id
+        const _id = req.user._id
         try {
-            const user = await User.findById({ _id: id })
+            const user = await User.findById({ _id: _id }),
+              editedUser = await User.findById({ _id: id })
             if (!user)
                 return res.status(404).json({ Message: "User not found" })
-            let isOldPasswordValid = true, oldAvatar = user.image
+            let isOldPasswordValid = true
+            //  oldAvatar = editedUser.image
             if (password)
-                isOldPasswordValid = await bcrypt.compare(oldPassword, user.password)
+                isOldPasswordValid = await bcrypt.compare(oldPassword, editedUser.password)
             if (!isOldPasswordValid)
                 return res.status(401).json({ message: "Invalid old password" })
             const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined
@@ -122,8 +125,10 @@ const userController = {
                 image,
                 role
             })
+            // await fs.unlink(oldAvatar)
             await editUser.save()
-            await fs.unlink(oldAvatar)
+            editUser ? res.status(200).send(`User ${id} has been updated successfully!`) :
+                res.status(400).send('Error occured!')
           }
           else if (user.role === 'user' || user.role === 'agency') {
             const editUser = await User.findByIdAndUpdate({ _id: id }, {
@@ -133,11 +138,11 @@ const userController = {
                 location,
                 image
             })
+            // await fs.unlink(oldAvatar)
             await editUser.save()
-            await fs.unlink(oldAvatar)
-          }
             editUser ? res.status(200).send(`User ${id} has been updated successfully!`) :
                 res.status(400).send('Error occured!')
+          }
         }
         catch (error) {
             return  res.status(500).json({ message: error.message })

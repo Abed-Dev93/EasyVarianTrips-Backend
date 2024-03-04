@@ -4,16 +4,17 @@ import Trip from '../models/Trip.js'
 
 const purchaseController = {
     createPurchase: async (req, res) => {
+        const userId = req.user._id
         const id = req.params.id
-        const { tripId, name, email, phone, persons } = req.body
-        if (!name || !email || !phone ||!persons)
+        const { name, email, phone, persons } = req.body
+        if (!name || !email || !phone || !persons)
             return res.status(400).send('All fields are required!')
         try {
-            const user = await User.findById({ _id: id })
-            const trip = await Trip.findById({ _id: tripId })
+            const user = await User.findById({ _id: userId })
+            const trip = await Trip.findById({ _id: id })
             const newPurchase = await Purchase.create({
-                trip: tripId,
-                user: id,
+                trip: id,
+                user: userId,
                 name,
                 email,
                 phone,
@@ -24,6 +25,10 @@ const purchaseController = {
             trip.users.push(user._id)
             trip.capacity -= newPurchase.persons
             await trip.save()
+            if (user.hasPurchased === false) {
+                user.hasPurchased === true
+                await user.save()
+            }
             newPurchase ? res.status(200).json({ Purchase: newPurchase }) :
                 res.status(400).send('Error occured!')
         }

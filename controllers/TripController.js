@@ -188,6 +188,18 @@ const tripController = {
             return  res.status(500).json({ message: error.message })
         }
     },
+    getTripByUser: async (req, res) => {
+        const { offset, limit } = req
+        const userId = req.user._id
+        try {
+            const user = await User.findById({ _id: userId })
+            const trips = await Trip.find({ _id: { $in: user.trips } }).skip(offset).limit(limit)
+            trips ? res.status(200).json({ Trips: trips }) : res.status(404).json({ Message: "Trips not found" })
+        }
+        catch (error) {
+            return  res.status(500).json({ message: error.message })
+        }
+    },
     updateTripById: async (req, res) => {
         const id = req.params.id
         const { category, type, shortDescription, description, price, capacity, startDate, endDate, fromLocation, toLocation, country, hotel, transit } = req.body

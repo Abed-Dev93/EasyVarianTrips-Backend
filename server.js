@@ -11,7 +11,7 @@ const app = express()
 const port = process.env.PORT
 
 app.use(cors({
-    origin: 'easy-varian-trips-frontend-ax0xm42kt.vercel.app',
+    origin: 'https://easy-varian-trips-frontend-ax0xm42kt.vercel.app',
     credentials: true,
     optionsSuccessStatus: 200
 }))

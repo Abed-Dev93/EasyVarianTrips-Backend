@@ -4,6 +4,7 @@ import cors from 'cors'
 import userRouter from './routes/UserRoute.js'
 import tripRouter from './routes/TripRoute.js'
 import purchaseRouter from './routes/PurchaseRoute.js'
+import faqRouter from './routes/FaqRoute.js'
 import { login, logout, verifyToken, isUserLoggedIn } from './middlewares/Authentication.js'
 import cookieParser from 'cookie-parser'
 
@@ -11,7 +12,7 @@ const app = express()
 const port = process.env.PORT
 
 app.use(cors({
-    origin: 'https://easy-varian-trips-frontend-ax0xm42kt.vercel.app',
+    origin: 'http://localhost:3000',
     credentials: true,
     optionsSuccessStatus: 200
 }))
@@ -25,6 +26,7 @@ app.get('/loggedIn', verifyToken, isUserLoggedIn)
 app.use('/user', userRouter)
 app.use('/trip', tripRouter)
 app.use('/purchase', purchaseRouter)
+app.use('/faq', faqRouter)
 
 dbConnect()
 

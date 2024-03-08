@@ -11,11 +11,7 @@ import cookieParser from 'cookie-parser'
 const app = express()
 const port = process.env.PORT
 
-app.use(cors({
-    origin: 'https://easy-varian-trips-frontend.vercel.app/',
-    credentials: true,
-    optionsSuccessStatus: 200
-}))
+app.use(cors())
 app.use(express.json())
 app.use(cookieParser())
 app.use('/images', express.static('images'))
